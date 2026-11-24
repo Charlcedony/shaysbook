@@ -1,0 +1,189 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta property="og:title" content="Shay's Bookmuse"><meta property="og:description" content="28 preloved books, ready to claim"><meta property="og:image" content="b12.jpg"><style>body{margin:0}img{max-width:100%}.book { cursor: pointer; position: relative; -webkit-tap-highlight-color: transparent; }
+.book.sel { outline: 3px solid var(--rust); outline-offset: -3px; }
+.pick { position: absolute; right: 10px; top: 10px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,250,246,.92); color: var(--rust); border: 2px solid var(--rust); display: grid; place-items: center; font: 700 20px var(--body); line-height: 1; }
+.book.sel .pick { background: var(--rust); color: #FBEDE4; }
+.hint { text-align: center; color: var(--muted); margin: -12px 0 0; font-size: 15px; }
+.cart { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: var(--paper); border-top: 1px solid var(--line); box-shadow: 0 -8px 24px rgba(58,34,25,.15); display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+.cart b { font-family: var(--display); font-size: 18px; display: block; }
+.cart small { color: var(--muted); font-size: 13px; }
+.cart button { font: 600 16px var(--body); background: var(--rust); color: #FBEDE4; border: 0; border-radius: 999px; padding: 13px 20px; cursor: pointer; flex: none; }
+.cart .clear { background: none; color: var(--muted); padding: 6px; font-size: 14px; text-decoration: underline; }
+.toast { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 30; background: var(--ink); color: var(--bg); padding: 12px 18px; border-radius: 12px; font-size: 15px; max-width: calc(100% - 32px); text-align: center; }
+body.has-cart .wrap { padding-bottom: 120px; }
+.meta { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+.price { font-family: var(--display); font-weight: 700; font-size: 19px; color: var(--rust); font-variant-numeric: tabular-nums; }
+.cond { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; }
+.mrp { color: var(--muted); font-size: 13px; margin-left: 4px; }
+</style>
+<title>Shay's Bookmuse Shelf</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Caveat:wght@600&family=Karla:wght@400;600&display=swap">
+<style>
+/* Layout: a bookshop shelf card. Brand header, filter tabs, then a 2-col (phone) to 4-col photo grid. */
+:root {
+  --bg: #FBF1EA; --paper: #FFFAF6; --ink: #3A2219; --muted: #8A6A5C;
+  --rust: #B4472A; --rust-soft: #F3DDD2; --line: #EBD5C8;
+  --display: "Fraunces", Georgia, serif; --body: "Karla", system-ui, sans-serif; --hand: "Caveat", "Comic Sans MS", cursive;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1E1411; --paper: #2A1C17; --ink: #F6E7DD; --muted: #C2A190; --rust: #E2724F; --rust-soft: #3D241B; --line: #43302A; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #1E1411; --paper: #2A1C17; --ink: #F6E7DD; --muted: #C2A190; --rust: #E2724F; --rust-soft: #3D241B; --line: #43302A; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 28px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+header { text-align: center; display: grid; gap: 10px; justify-items: center; }
+.hero { padding-top: 12px; gap: 6px; }
+.fan { position: relative; width: 240px; height: 190px; margin-bottom: 14px; }
+.fan img { position: absolute; left: 50%; top: 0; width: 118px; aspect-ratio: 3/4; object-fit: cover; border-radius: 10px; border: 4px solid var(--paper); box-shadow: 0 10px 24px rgba(58,34,25,.22); }
+.fan img:nth-child(1) { transform: translateX(-112%) rotate(-9deg); top: 14px; }
+.fan img:nth-child(2) { transform: translateX(-50%); z-index: 1; }
+.fan img:nth-child(3) { transform: translateX(12%) rotate(9deg); top: 14px; }
+.hero h1 { font-size: clamp(34px, 9vw, 52px); }
+.hero .tag { font-size: 24px; }
+.filters { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding-bottom: 4px; scrollbar-width: none; }
+.filters button { flex: none; }
+@media (min-width: 700px) { .filters { justify-content: center; } }
+.genre { display: none; }
+.mark { width: 76px; height: 76px; border-radius: 50%; background: var(--rust); color: #FBEDE4; display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: 44px; position: relative; }
+.mark::after { content: "✦"; position: absolute; right: 8px; top: 8px; font-size: 14px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(32px, 7vw, 52px); margin: 0; line-height: 1; text-wrap: balance; }
+.tag { font-family: var(--hand); font-size: 26px; color: var(--rust); margin: 0; }
+.sub { color: var(--muted); margin: 0; max-width: 46ch; line-height: 1.5; }
+.claim { background: var(--paper); border: 2px dashed var(--rust); border-radius: 18px; padding: 18px 20px; display: grid; gap: 12px; }
+.claim h2 { font-family: var(--display); font-size: 22px; margin: 0; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.steps li { display: flex; gap: 10px; align-items: flex-start; line-height: 1.4; }
+.steps b { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--rust); color: #FBEDE4; display: grid; place-items: center; font-size: 14px; }
+.perk { font-family: var(--hand); font-size: 24px; color: var(--rust); margin: 0; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.filters button { font: 600 15px var(--body); padding: 9px 16px; border-radius: 999px; border: 1.5px solid var(--rust); background: transparent; color: var(--rust); cursor: pointer; }
+.filters button[aria-pressed="true"] { background: var(--rust); color: #FBEDE4; }
+.filters button:focus-visible, .copy:focus-visible, a:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (min-width: 700px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; } }
+@media (min-width: 980px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.book { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.ph { position: relative; aspect-ratio: 3 / 4; max-width: 100%; background: var(--rust-soft); }
+.ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.no { position: absolute; left: 10px; top: 10px; background: var(--rust); color: #FBEDE4; font: 700 15px var(--body); padding: 4px 10px; border-radius: 999px; font-variant-numeric: tabular-nums; }
+.info { padding: 12px 12px 14px; display: grid; gap: 4px; }
+.info h3 { font-family: var(--display); font-weight: 500; font-size: 17px; line-height: 1.2; margin: 0; }
+.info p { margin: 0; color: var(--muted); font-size: 14px; }
+.genre { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--rust); font-weight: 600; }
+.set { font-family: var(--hand); color: var(--rust); font-size: 19px; }
+footer { text-align: center; display: grid; gap: 12px; justify-items: center; }
+.msg { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; max-width: 46ch; line-height: 1.5; user-select: all; }
+.copy, .ig { font: 600 16px var(--body); border-radius: 999px; padding: 12px 22px; cursor: pointer; text-decoration: none; }
+.copy { background: var(--rust); color: #FBEDE4; border: 0; }
+.ig { color: var(--rust); border: 1.5px solid var(--rust); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.fine { color: var(--muted); font-size: 13px; margin: 0; }
+@media (prefers-reduced-motion: no-preference) { .book { transition: transform .2s; } .book:hover { transform: translateY(-3px); } }
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="fan" aria-hidden="true">
+      <img src="b16.jpg" alt=""><img src="b12.jpg" alt=""><img src="b01.jpg" alt="">
+    </div>
+    <h1>Shay's Bookmuse</h1>
+    <p class="tag">28 preloved books, ready to claim</p>
+  </header>
+
+  <p class="hint">Tap the books you want, then message me in one go</p>
+  <section class="grid" id="grid" aria-live="polite"></section>
+
+  <section class="claim" aria-labelledby="how">
+    <h2 id="how">How to adopt a book</h2>
+    <ol class="steps">
+      <li><b>1</b><span>DM me the book numbers you want</span></li>
+      <li><b>2</b><span>Pay within 24 hours to confirm</span></li>
+      <li><b>3</b><span>Your order reaches you within 20 days</span></li>
+    </ol>
+    <p class="perk">✦ free magnetic bookmark with every order · free shipping above Rs. 2000</p>
+  </section>
+
+  <footer>
+    <p class="sub">Questions? Just say hi.</p>
+    <a class="ig" href="https://ig.me/m/shays_preloved_bookmuse" target="_blank" rel="noopener">Message @shays_preloved_bookmuse</a>
+    <p class="fine">Books are reserved only after payment. New drops every 2nd Saturday, 7:30 PM.</p>
+  </footer>
+</div>
+<div class="cart" id="cart" hidden>
+  <div><b id="count"></b><small id="names"></small> <button class="clear" id="clear" type="button">clear</button></div>
+  <button id="send" type="button">Message me</button>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const BOOKS = [
+  ["Inferno","Dan Brown","Thriller"],
+  ["Carrie Soto Is Back","Taylor Jenkins Reid","Contemporary"],
+  ["The Perfect Assassin","James Patterson & Brian Sitts","Thriller"],
+  ["The Associate","John Grisham","Thriller"],
+  ["Lessons","Ian McEwan","Literary"],
+  ["Animal","Lisa Taddeo","Literary"],
+  ["Me Before You · The One Plus One · After You","Jojo Moyes","Romance","Set of 3"],
+  ["Memoirs of a Geisha","Arthur Golden","Literary"],
+  ["Tomorrow, and Tomorrow, and Tomorrow","Gabrielle Zevin","Contemporary"],
+  ["The White Tiger","Aravind Adiga","Literary"],
+  ["Slammed","Colleen Hoover","Romance"],
+  ["Secrets of a Kept Woman","Shani Greene-Dowdell","Romance"],
+  ["The Cruel Prince · The Wicked King · The Queen of Nothing","Holly Black","Fantasy","Full trilogy"],
+  ["The Boy in the Striped Pyjamas","John Boyne","Literary"],
+  ["We Are All Completely Beside Ourselves","Karen Joy Fowler","Literary"],
+  ["The Roughest Draft","Emily Wibberley & Austin Siegemund-Broka","Romance"],
+  ["The Notebook","Nicholas Sparks","Romance"],
+  ["The Help","Kathryn Stockett","Literary"],
+  ["One More Mountain","Deborah Ellis","Contemporary"],
+  ["Reader's Digest Condensed Books","Finders Keepers, The Bear, Cold Harbour","Classics"],
+  ["Eat Pray Love","Elizabeth Gilbert","Contemporary"],
+  ["Great Biographies","Reader's Digest","Classics"],
+  ["North and South","Elizabeth Gaskell","Classics"],
+  ["David Copperfield","Charles Dickens","Classics"],
+  ["Madame Bovary","Gustave Flaubert","Classics"],
+  ["Slayer of Kamsa","Ashok K. Banker","Fantasy"],
+  ["The Carpet People","Terry Pratchett","Fantasy"],
+  ["Cover Me","Joanna Wayne & Mallory Kane","Romance"],
+];
+const grid = document.getElementById("grid");
+const MRP = [499, 328, 499, 599, 499, 499, 1497, 499, 599, 399, 499, 599, 1497, 399, 499, 499, 399, 499, 499, 500, 499, 600, 399, 299, 199, 399, 399, 250];
+const PRICE = [349, 249, 239, 349, 329, 249, 647, 249, 249, 279, 199, 199, 747, 149, 299, 269, 229, 269, 229, 279, 229, 349, 199, 249, 169, 199, 199, 99];
+const COND = ['Like New', 'Good', 'Like New', 'Very Good', 'Like New', 'Very Good', 'Good', 'Good', 'Acceptable', 'Like New', 'Acceptable', 'Very Good', 'Like New', 'Good', 'Very Good', 'Like New', 'Like New', 'Very Good', 'Very Good', 'Good', 'Good', 'Very Good', 'Good', 'Good', 'Good', 'Like New', 'Very Good', 'Acceptable'];
+const rs = n => '₹' + n.toLocaleString('en-IN');
+const IG = "https://ig.me/m/shays_preloved_bookmuse";
+const picked = new Set();
+const pad = n => String(n).padStart(2, "0");
+function render() {
+  grid.innerHTML = BOOKS.map((b, i) => `
+    <article class="book${picked.has(i) ? " sel" : ""}" data-i="${i}" role="button" tabindex="0" aria-pressed="${picked.has(i)}" aria-label="No. ${pad(i+1)} ${b[0]}">
+      <div class="ph"><img src="b${pad(i)}.jpg" alt="${b[0]} by ${b[1]}" loading="lazy"><span class="no">No. ${pad(i+1)}</span><span class="pick" aria-hidden="true">${picked.has(i) ? "✓" : "+"}</span></div>
+      <div class="info"><h3>${b[0]}</h3><p>${b[1]}</p><div class="meta"><span><span class="price">${rs(PRICE[i])}</span> <s class="mrp">${rs(MRP[i])}</s></span><span class="cond">${COND[i]}</span></div>${b[3] ? `<span class="set">${b[3]}</span>` : ""}</div>
+    </article>`).join("");
+  const cart = document.getElementById("cart");
+  cart.hidden = picked.size === 0;
+  document.body.classList.toggle("has-cart", picked.size > 0);
+  const total = [...picked].reduce((t, i) => t + PRICE[i], 0);
+  document.getElementById("count").textContent = (picked.size === 1 ? "1 book" : picked.size + " books") + " · " + rs(total);
+  document.getElementById("names").textContent = [...picked].sort((a,b)=>a-b).map(i => "No. " + pad(i+1)).join(", ");
+}
+function toggle(el) { const i = +el.dataset.i; picked.has(i) ? picked.delete(i) : picked.add(i); render(); }
+grid.addEventListener("click", e => { const el = e.target.closest(".book"); if (el) toggle(el); });
+grid.addEventListener("keydown", e => { const el = e.target.closest(".book"); if (el && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggle(el); } });
+document.getElementById("clear").addEventListener("click", () => { picked.clear(); render(); });
+function toast(t) { const el = document.getElementById("toast"); el.textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 4000); }
+document.getElementById("send").addEventListener("click", async () => {
+  const list = [...picked].sort((a,b)=>a-b).map(i => `• No. ${pad(i+1)} ${BOOKS[i][0]} (${rs(PRICE[i])})`).join(String.fromCharCode(10));
+  const msg = `Hi Shay! I'd like to adopt:
+${list}
+Total: ${rs([...picked].reduce((t, i) => t + PRICE[i], 0))}
+
+Are these available? 📚`;
+  let ok = false;
+  try { await navigator.clipboard.writeText(msg); ok = true; } catch {}
+  toast(ok ? "Message copied! Paste it in my DM 💌" : "Opening my DM, tell me the book numbers 💌");
+  setTimeout(() => { location.href = IG; }, 900);
+});
+render();
+</script>
